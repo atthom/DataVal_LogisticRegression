@@ -30,9 +30,8 @@ y2 = generateBinaryResponse(x2,b0,b1)
 #5.
 x = c(x1,x2)
 xi = t(cbind(rep(1,length(x)),x))
-#print(xi)
 yi = c(y1,y2)
-#print(yi)
+
 bc0 = 0.3
 bc1 = 1.7
 bc = c(bc0,bc1)
@@ -41,18 +40,22 @@ gamma = 0.0001
 
 M = 1000
 for(t in 1:M){
-  print(bc)
   #We compute the gradient
   pc = logistic(bc[1]+bc[2]*x)
   gradJ = rowSums(xi%*%(yi-pc))
-  #print(gradJ)
+  cat("gradJ = ",gradJ,"\n")
 
   #We update the estimates 
   bc = bc + gamma*gradJ
   
   #We compute the maximum likelihood function
-  J = sum(yi*(bc[1]+bc[2]*x))-sum(log(1+exp(bc[1]+bc[2]*x)))
+  J = sum(yi%*%(bc[1]+bc[2]*x))-sum(log(1+exp(bc[1]+bc[2]*x)))
   cat("J = ",J,"\n")
 }
 
-print(bc)
+cat("estimated beta = ",bc,"\n")
+
+#7.
+Prm0 = sum(generateBinaryResponse(x1,bc[1],bc[2]))/n
+Prm1 = sum(generateBinaryResponse(x2,bc[1],bc[2]))/n
+
