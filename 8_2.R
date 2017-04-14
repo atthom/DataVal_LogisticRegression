@@ -5,13 +5,11 @@ m0 = 0.5
 m1 = 1.1
 sd = 1.2
 
-#1.
+#Question 1-2
 x1 = rnorm(n,m0,sd)
-
-#2.
 x2 = rnorm(n,m1,sd)
 
-#3.
+#Question 3-4
 b0 = 0.3
 b1 = 1.7
 
@@ -25,13 +23,11 @@ generateBinaryResponse<-function(x,b0,b1){
   y = rbinom(n,1,logistic(b0+b1*x))
   return(y)
 }
-
 y1 = generateBinaryResponse(x1,b0,b1)
-
-#4.
 y2 = generateBinaryResponse(x2,b0,b1)
 
-#5.
+
+#Question 5
 x = c(x1,x2)
 xi = t(cbind(rep(1,length(x)),x))
 yi = c(y1,y2)
@@ -49,10 +45,10 @@ compute_J<-function(yi, beta0, beta1,x) {
 ccc = c(0,0)
 all_gradJ = c()
 all_cost = c()
+
 #Gradient ascent loop
 gamma = 0.01
 M = 200
-
 for(t in 1:M){
   #We compute the gradient
   pc = logistic(bc[1]+bc[2]*x)
@@ -67,7 +63,7 @@ for(t in 1:M){
   
   #We compute the maximum likelihood function
   #Also called the cost function
-  J = compute_j(yi, bc[1], bc[2], x)
+  J = compute_J(yi, bc[1], bc[2], x)
   cat("J = ",J,"\n")
   all_cost = c(all_cost, J)
   
@@ -76,13 +72,15 @@ for(t in 1:M){
 cat("Beta estimated : ", bc,"\n")
 cat("True Beta : ", b0, b1,"\n")
 
-#We plot the norm of the gradient of the maximum likelihood function
+#Question 6
+
+#We plot the norm of the gradient of the cost function for each step
 plot.new()
 plot(all_gradJ, main = "Norme du gradient en fonction de t", 
                       xlab = "Iterations (t)", ylab = "Norme du gradient")
 
-
-plot(all_cost,  main = "Fonction de coût en fonction de t", xlab = "Iterations (t)", ylab = "Fonction de coût")
+#We plot the cost function for each step
+plot(all_cost,  main = "Fonction de coÃ»t en fonction de t", xlab = "Iterations (t)", ylab = "Fonction de co?t")
 
 #We plot a heatmap of the maximum likelihood function
 bc_0_all = seq(0, 2, 0.1)
@@ -94,33 +92,12 @@ for(i in 1:(length(bc_1_all))) {
     mat[i,j] =  compute_J(yi, bc_0_all[i], bc_1_all[j], x)
   }
 }
-
-colnames(mat) = paste("Beta 1 : ", bc_1_all , sep = "")
-rownames(mat) = paste("Beta 0 : ", bc_0_all, sep = "")
+colnames(mat) = paste("Beta 1 : ", bc_0_all, sep = "")
+rownames(mat) = paste("Beta 0 : ", bc_1_all, sep = "")
 pheatmap(mat, cluster_row = FALSE, cluster_col = FALSE, color= heat.colors(254, alpha = 1),
          main = "Heatmap de la fonction de coup (J) en fonction de beta 0 et de beta 1")
 
-
-#7.
-
-
-#Prm0 = sum(generateBinaryResponse(x1,bc[1],bc[2]))/n
-#Prm1 = sum(generateBinaryResponse(x2,bc[1],bc[2]))/n
-
-#####################ANOTHER TRY
-
+#Question 7
 Prm0 = sum(y1)/n
 Prm1 = sum(y2)/n
 cat("Pr(Y=1 | m0) = ",Prm0, " Pr(Y=1 | m1) = ", Prm1)
-
-
-
-
-
-
-
-
-
-
-#8.
-exp(Prm0-Prm1)
