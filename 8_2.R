@@ -17,6 +17,8 @@ logistic<-function(z){
   return(1.0/(1.0+exp(-z)))
 }
 
+#On veut generer les Y tel que logit(Pr(Y=1|X=x))=B0+B1*x
+#Donc Pr(Y=1|X=x) = logistic(B0+B1*x)
 generateBinaryResponse<-function(x,b0,b1){
   y = rbinom(n,1,logistic(b0+b1*x))
   return(y)
@@ -28,6 +30,10 @@ y1 = generateBinaryResponse(x1,b0,b1)
 y2 = generateBinaryResponse(x2,b0,b1)
 
 #5.
+J<-function(x,y,b0,b1){
+  return(sum(y%*%(b0+b1*x))-sum(log(1+exp(b0+b1*x))))
+}
+
 x = c(x1,x2)
 xi = t(cbind(rep(1,length(x)),x))
 yi = c(y1,y2)
@@ -59,3 +65,5 @@ cat("estimated beta = ",bc,"\n")
 Prm0 = sum(generateBinaryResponse(x1,bc[1],bc[2]))/n
 Prm1 = sum(generateBinaryResponse(x2,bc[1],bc[2]))/n
 
+#8.
+exp(Prm0-Prm1)
