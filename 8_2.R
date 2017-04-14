@@ -1,11 +1,5 @@
-library(lattice) 
-library(rgl) 
-library(akima)
-library(plot3D)
-library(rgdal)
-library(pixmap)
-library(gplots)
 library(pheatmap)
+
 n = 1000
 m0 = 0.5
 m1 = 1.1
@@ -25,30 +19,12 @@ logistic<-function(z){
   return(1.0/(1.0+exp(-z)))
 }
 
+#On veut generer les Y tel que logit(Pr(Y=1|X=x))=B0+B1*x
+#Donc Pr(Y=1|X=x) = logistic(B0+B1*x)
 generateBinaryResponse<-function(x,b0,b1){
   y = rbinom(n,1,logistic(b0+b1*x))
   return(y)
 }
-
-j_funct <- function(xi, yi, m, bc) {
-  all_sum =  c(0,0)
-  for(i in 1:m) {
-    one = (get_pc(bc, xi[i]) - yi[i])* xi[i]
-    all_sum = c(all_sum, one)
-  }
-  return((1/m)*sum(all_sum))
-}
-
-gradient<-function(xi,yi,bc){
-  
-  correction = yi - get_pc(bc, xi)
-  print( get_pc(bc, xi))
-  
-  gradJ = rowSums(xi*correction)
-  
-  return(gradJ)
-}
-
 
 y1 = generateBinaryResponse(x1,b0,b1)
 
@@ -60,22 +36,23 @@ x = c(x1,x2)
 xi = t(cbind(rep(1,length(x)),x))
 yi = c(y1,y2)
 
-bc0 = 0.5
-bc1 = 1.5
+#We initialize the estimated betas
+bc0 = 1
+bc1 = 1
 bc = c(bc0,bc1)
 
-gamma = 0.0001
-
-M = 1000
-
-
-compute_j<-function(yi, beta0, beta1,x) {
-  # function that compute J of beta
+#Maximum likelihood function
+compute_J<-function(yi, beta0, beta1,x) {
   return(sum(yi%*%(beta0+beta1*x))-sum(log(1+exp(beta0+beta1*x))))
 }
 
+ccc = c(0,0)
 all_gradJ = c()
 all_cost = c()
+#Gradient ascent loop
+gamma = 0.01
+M = 200
+
 for(t in 1:M){
   #We compute the gradient
   pc = logistic(bc[1]+bc[2]*x)
@@ -86,7 +63,7 @@ for(t in 1:M){
   all_gradJ = c(all_gradJ, norm(as.matrix(gradJ)))
   
   #We update the estimates 
-  bc = bc + gamma*gradJ
+  bc = bc + gamma*(gradJ/norm(as.matrix(gradJ)))
   
   #We compute the maximum likelihood function
   #Also called the cost function
@@ -99,6 +76,7 @@ for(t in 1:M){
 cat("Beta estimated : ", bc,"\n")
 cat("True Beta : ", b0, b1,"\n")
 
+#We plot the norm of the gradient of the maximum likelihood function
 plot.new()
 plot(all_gradJ, main = "Norme du gradient en fonction de t", 
                       xlab = "Iterations (t)", ylab = "Norme du gradient")
@@ -106,14 +84,14 @@ plot(all_gradJ, main = "Norme du gradient en fonction de t",
 
 plot(all_cost,  main = "Fonction de coût en fonction de t", xlab = "Iterations (t)", ylab = "Fonction de coût")
 
+#We plot a heatmap of the maximum likelihood function
 bc_0_all = seq(0, 2, 0.1)
 bc_1_all = seq(0, 2, 0.1)
 ll = length(bc_1_all)
 mat = matrix(rep(0, (ll)*(ll)), ncol=ll, nrow=ll)
-
 for(i in 1:(length(bc_1_all))) {
   for(j in 1:(length(bc_1_all))) {
-    mat[i,j] =  compute_j(yi, bc_0_all[i], bc_1_all[j], x)
+    mat[i,j] =  compute_J(yi, bc_0_all[i], bc_1_all[j], x)
   }
 }
 
@@ -144,3 +122,5 @@ cat("Pr(Y=1 | m0) = ",Prm0, " Pr(Y=1 | m1) = ", Prm1)
 
 
 
+#8.
+exp(Prm0-Prm1)
