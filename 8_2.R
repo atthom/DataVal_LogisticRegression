@@ -1,11 +1,5 @@
-library(lattice) 
-library(rgl) 
-library(akima)
-library(plot3D)
-library(rgdal)
-library(pixmap)
-library(gplots)
 library(pheatmap)
+
 n = 1000
 m0 = 0.5
 m1 = 1.1
@@ -56,7 +50,7 @@ ccc = c(0,0)
 all_gradJ = c()
 
 #Gradient ascent loop
-gamma = 0.0001
+gamma = 0.01
 M = 200
 for(t in 1:M){
   #We compute the gradient
@@ -65,9 +59,8 @@ for(t in 1:M){
   cat("gradJ = ",gradJ,"\n")
   all_gradJ = c(all_gradJ, norm(as.matrix(gradJ)))
   
-
   #We update the estimates 
-  bc = bc + gamma*gradJ
+  bc = bc + gamma*(gradJ/norm(as.matrix(gradJ)))
   
   #We compute the maximum likelihood function
   J = compute_J(yi, bc[1], bc[2], x)
@@ -77,6 +70,7 @@ for(t in 1:M){
 cat("estimated beta = ",bc,"\n")
 
 #We plot the norm of the gradient of the maximum likelihood function
+plot.new()
 plot(all_gradJ, title(main = "Norme du gradient en fonction de t", xlab = "iterations", ylab = "Norme du gradient"))
 
 
@@ -87,7 +81,7 @@ ll = length(bc_1_all)
 mat = matrix(rep(0, (ll)*(ll)), ncol=ll, nrow=ll)
 for(i in 1:(length(bc_1_all))) {
   for(j in 1:(length(bc_1_all))) {
-    mat[i,j] =  compute_j(yi, bc_0_all[i], bc_1_all[j], x)
+    mat[i,j] =  compute_J(yi, bc_0_all[i], bc_1_all[j], x)
   }
 }
 colnames(mat) = paste("Beta 0 : ", bc_0_all , sep = "")
