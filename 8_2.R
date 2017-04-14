@@ -18,8 +18,8 @@ x1 = rnorm(n,m0,sd)
 x2 = rnorm(n,m1,sd)
 
 #3.
-b0 = 0.5
-b1 = 1.5
+b0 = 0.3
+b1 = 1.7
 
 logistic<-function(z){
   return(1.0/(1.0+exp(-z)))
